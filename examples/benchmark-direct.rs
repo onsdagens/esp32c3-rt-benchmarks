@@ -53,13 +53,9 @@ unsafe fn main() -> ! {
     interrupt::enable(
         peripherals::Interrupt::FROM_CPU_INTR0,
         interrupt::Priority::Priority3,
+        CpuInterrupt::Interrupt1,
     )
     .unwrap();
-    interrupt::map(
-        Cpu::ProCpu,
-        peripherals::Interrupt::FROM_CPU_INTR0,
-        CpuInterrupt::Interrupt1,
-    );
     unsafe {
         asm!(
             "
