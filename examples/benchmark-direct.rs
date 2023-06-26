@@ -12,7 +12,7 @@ use esp32c3_hal::{
     prelude::*,
     system::{SoftwareInterrupt, SoftwareInterruptControl},
     timer::TimerGroup,
-    Cpu, Rtc,
+    Rtc,
 };
 //use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
