@@ -2,7 +2,6 @@
 #![no_std]
 #![feature(naked_functions)]
 use core::{arch::asm, cell::RefCell, panic::PanicInfo};
-
 use critical_section::Mutex;
 use esp32c3_hal::{
     clock::ClockControl,
@@ -14,14 +13,16 @@ use esp32c3_hal::{
     timer::TimerGroup,
     Rtc,
 };
+use esp_println::println;
+
 //use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+//use rtt_target::{rprintln, rtt_init_print};
 
 static SWINT: Mutex<RefCell<Option<SoftwareInterruptControl>>> = Mutex::new(RefCell::new(None));
 #[entry]
 unsafe fn main() -> ! {
-    rtt_init_print!();
-    rprintln!("init");
+    //    rtt_init_print!();
+    println!("init");
     let peripherals = Peripherals::take();
     let mut system = peripherals.SYSTEM.split();
     let clockctrl = system.clock_control;
@@ -65,7 +66,7 @@ unsafe fn main() -> ! {
         "
         );
     }
-    rprintln!("MPC:{}", unsafe { fetch_performance_timer() });
+    println!("MPC:{}", unsafe { fetch_performance_timer() });
     //interrupt is raised from assembly for max timer granularity.
     unsafe {
         asm!(
@@ -78,7 +79,7 @@ unsafe fn main() -> ! {
         )
     }
 
-    rprintln!("Returned");
+    println!("Returned");
     loop {}
 }
 
@@ -92,7 +93,7 @@ fn cpu_int_1_handler() {
             .unwrap()
             .reset(SoftwareInterrupt::SoftwareInterrupt0);
     });
-    rprintln!("Performance counter:{}", unsafe {
+    println!("Performance counter:{}", unsafe {
         fetch_performance_timer()
     });
 }
@@ -100,13 +101,27 @@ fn cpu_int_1_handler() {
 fn panic(_: &PanicInfo) -> ! {
     loop {}
 }
-#[naked]
 unsafe extern "C" fn fetch_performance_timer() -> i32 {
+    let x;
     asm!(
         "
-    csrr a0, 0x7e2
-    jr ra
+    csrr {reg}, 0x7e2
     ",
-        options(noreturn)
+        reg = out(reg) x,
     );
+    x
+}
+
+// This is to satisfy the linker due to a broken PAC dependency.
+// One could also fork the PAC and fix it upstream,
+// but this crate at this point relies on a 1 year old version of the PAC,
+// and we are not touching this at runtime in any case.
+#[allow(non_snake_case)]
+extern "C" {
+    fn DefaultHandler();
+}
+#[allow(non_snake_case)]
+#[no_mangle]
+extern "C" fn USB_DEVICE() {
+    unsafe { DefaultHandler() }
 }
