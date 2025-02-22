@@ -8,18 +8,18 @@ The amount of cycles taken between the triggering of an interrupt and handler en
 **NOTE:** The benchmarks are intended for the ESP32-C3 microcontroller, and tested using the ESP32-C3-DevKit-RUST-1. The idea is compatible with the other Espressif RISC-V MCUs, but the benchmarks themselves may require some adjustments to compile and flash.
 
 
-`cargo-embed` is required for flashing. We use the imc target.
+`cargo-espflash and espflash` are required for flashing. We use the imc target.
 ```shell
 rustup target add riscv32imc-unknown-none-elf
-cargo install cargo-embed
+cargo install cargo-espflash espflash
 ```
 
 ``` shell
-cargo embed --example benchmark-hal --release
+cargo run --example benchmark-hal --release
 ```
 To run the HAL driven example.
 
 ``` shell
-cargo embed --example benchmark-direct --features direct --release
+cargo run --example benchmark-direct --features direct --release
 ```
 To run the direct example.
